@@ -12,10 +12,8 @@ install:
 	wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v2.8.0/hadolint-Linux-x86_64 &&\
 		chmod +x /bin/hadolint
 
-lint:
-	cd azure-vote
+lint:	
 	hadolint Dockerfile
-	cd azure-vote
-	pylint --disable=R,C,W1309,W1203,W1202,W1201 app.py
+	pylint --disable=R,C,W1309,W1203,W1202,W1201 ./azure-vote/main.py
 
 all: install lint test

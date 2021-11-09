@@ -10,6 +10,7 @@ jobs:
       - run:
           name: Install dependencies and hadolint
           command: |
+            cd azure-vote
             make install
 
       - run:

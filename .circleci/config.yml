@@ -18,11 +18,22 @@ jobs:
           command: |
             cd azure-vote
             make lint 
-  
-  # Test Job. 
+  # Build new image and push to the Dockerhub  
+  push-images:
+    machine: true
+    steps:
+      - checkout
+      - run: |
+          cd azure-vote 
+          docker build . -t sudkul/voting-app-frontend:latest          
+          docker image ls
+          echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
+          docker push sudkul/voting-app-frontend:latest
+
+
   # Assuming the CircleCI project has the following AWS variables saved.
   # AWS_ACCESS_KEY_ID, AWS_DEFAULT_REGION, AWS_SECRET_ACCESS_KEY
-  test-cluster:
+  deploy-application:
     executor: aws-eks/python3
     parameters:
       cluster-name:
@@ -35,29 +46,14 @@ jobs:
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: << parameters.cluster-name >>
       - run:
-          name: Test cluster
+          name: Deploy voting app to the cluster
           command: |
             kubectl get services
             ls -l
             kubectl apply -f voting-app.yaml
             kubectl get pods,svc,deployments
             
-          
-          
-
-  # Deploy the application to the AWS K8s cluster
-  deploy-application:
-    docker:
-      # aws-cli/2.3.4 Python/3.8.8 Linux/4.15.0-1110-aws docker/x86_64
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run:
-          name: Check AWS version
-          command: |
-            aws --version
-            ls -l
-
+  
 orbs:
   aws-eks: circleci/aws-eks@1.1.0
   kubernetes: circleci/kubernetes@0.12.0
@@ -67,5 +63,6 @@ workflows:
     jobs:
       #- build-application
       #- deploy-application
-      - test-cluster:
-          cluster-name: my-eks-demo
+      - push-images
+      #- deploy-application:
+      #    cluster-name: my-eks-demo

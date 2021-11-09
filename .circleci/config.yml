@@ -63,5 +63,3 @@ workflows:
       #- deploy-application
       - test-cluster:
           cluster-name: my-eks-demo
-          requires:
-            - aws-eks/create-cluster

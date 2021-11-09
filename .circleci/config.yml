@@ -16,11 +16,13 @@ jobs:
       - run:
           name: Lint the application
           command: |
+            cd azure-vote
             make lint           
 
   # Deploy the application to the AWS K8s cluster
   deploy-application:
     docker:
+      # aws-cli/2.3.4 Python/3.8.8 Linux/4.15.0-1110-aws docker/x86_64
       - image: amazon/aws-cli
     steps:
       - checkout
@@ -28,6 +30,7 @@ jobs:
           name: Check AWS version
           command: |
             aws --version
+            kubectl version --client
             ls -l
 
 workflows:

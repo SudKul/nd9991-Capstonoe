@@ -1,6 +1,6 @@
 
 
-# Azure Voting App
+# Azure Voting App -  Rolling deployment 
 This sample creates a multi-container application in an Azure Kubernetes Service (AKS) cluster. It has been forked from https://github.com/Azure-Samples/azure-voting-app-redis and used in this repo for personal education purpose.  
 The application interface has been built using Python / Flask. The data component is using Redis.
 
@@ -47,13 +47,18 @@ docker push sudkul/voting-app-frontend:latest
 >Deploying these Docker container(s) to a small Kubernetes cluster. For your Kubernetes cluster you can either use AWS Kubernetes as a Service, or build your own Kubernetes cluster. To deploy your Kubernetes cluster, use either Ansible or Cloudformation. Preferably, run these from within Jenkins or Circle CI as an independent pipeline.
 
 
-Cloudformation should have the steps for 
-## Creating a Kubernetes cluster in AWS EC2 instance
-### Install Docker
+After an edit is made to the repo, the CircleCI should
+- Lint the application code
+
+
+
+## [NOT WORKING] Creating a Kubernetes cluster in AWS EC2 instance
+### 1. Install Docker
 ```bash
 # Installing Docker in Amazon Linux 2
 sudo yum update -y
 sudo amazon-linux-extras install docker -y
+sudo yum install git -y
 # Start the Docker service
 sudo service docker start
 # Add the ec2-user to the docker group
@@ -67,19 +72,23 @@ sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-
 sudo chmod +x /usr/local/bin/docker-compose
 sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 docker-compose --version
+git clone https://github.com/SudKul/nd9991-Capstonoe.git
+cd nd9991-Capstonoe/
 ```
 
-### Run the app in the Docker containers (only for testing purpose)
+### [Optional] Run the app in the Docker containers (only for testing purpose)
 ```bash
 # Pull the images from Dockerhub
 docker pull sudkul/voting-app-backend:latest
 docker pull sudkul/voting-app-frontend:latest
-docker run -it --name voting-app-backend  -p 6379:6379 -e ALLOW_EMPTY_PASSWORD="yes" sudkul/voting-app-backend:latest
-docker run -it --name voting-app-frontend -p 8080:80 -e REDIS=azure-vote-back sudkul/voting-app-frontend:latest 
+docker-compose up -d
+# Access the application at [Public DNS]:8080
+docker-compose down
 ```
 Open a [Public DNS]:8080 in the browser tab in your local machine to access the application. 
 
-### Install kubectl binary with curl on Linux 
+
+### 2. Install kubectl binary with curl on Linux 
 [Reference](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux)
 ```bash
 # Download the latest release with the command
@@ -88,7 +97,7 @@ curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stabl
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 kubectl version --client
 ```
-### Install minikube
+### 3. Install minikube
 ```bash
 # To install the latest minikube stable release on x86-64 Linux using binary download:
 curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
@@ -100,3 +109,11 @@ kubectl apply -f voting-app.yaml
 kubectl get pods,svc,deployments
 ```
 Use the EXTERNAL-IP address of the Load balancer to access the application from your local machine, provided the security group of  the EC2 instance allows inbound access on port 80 and 8080
+
+
+
+NOT WORKING
+```bash
+docker run -it --name voting-app-backend  -p 6379:6379 -e ALLOW_EMPTY_PASSWORD="yes" sudkul/voting-app-backend:latest
+docker run -it --name voting-app-frontend -p 8080:80 -e REDIS=azure-vote-back sudkul/voting-app-frontend:latest 
+````

@@ -1,10 +1,37 @@
 version: 2.1
 jobs:
-  build:
+  # Lint the application to check any build/syntax errors
+  build-application:
     docker:
       - image: python:3.7.3-stretch
-
     working_directory: ~/repo
-
     steps:
       - checkout
+      - run:
+          name: Install dependencies and hadolint
+          command: |
+            make install
+
+      - run:
+          name: Lint the application
+          command: |
+            make lint           
+
+  # Deploy the application to the AWS K8s cluster
+  deploy-application:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Check AWS version
+          command: |
+            aws --version
+            ls -l
+
+workflows:
+  default:
+    jobs:
+      - build-application
+      - deploy-application
+  

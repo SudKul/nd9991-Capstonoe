@@ -19,6 +19,7 @@ jobs:
             cd azure-vote
             make lint 
   # Build new image and push to the Dockerhub  
+  # Reference: https://circleci.com/docs/2.0/building-docker-images/
   push-images:
     machine: true
     steps:
@@ -33,6 +34,7 @@ jobs:
 
   # Assuming the CircleCI project has the following AWS variables saved.
   # AWS_ACCESS_KEY_ID, AWS_DEFAULT_REGION, AWS_SECRET_ACCESS_KEY
+  # Reference: https://circleci.com/developer/orbs/orb/circleci/aws-eks#usage-create-eks-cluster
   deploy-application:
     executor: aws-eks/python3
     parameters:
@@ -61,8 +63,11 @@ version: 2.1
 workflows:
   deployment:
     jobs:
-      #- build-application
-      #- deploy-application
-      - push-images
-      #- deploy-application:
-      #    cluster-name: my-eks-demo
+      - build-application
+      - push-images:
+          requires:
+            - build-application
+      - deploy-application:
+          cluster-name: my-eks-demo
+          requires:
+            - push-images

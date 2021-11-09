@@ -1,4 +1,27 @@
+
 jobs:
+  # Lint the application to check any build/syntax errors
+  build-application:
+    docker:
+      - image: python:3.7.3-stretch
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies and hadolint
+          command: |
+            cd azure-vote
+            make install
+
+      - run:
+          name: Lint the application
+          command: |
+            cd azure-vote
+            make lint 
+  
+  # Test Job. 
+  # Assuming the CircleCI project has the following AWS variables saved.
+  # AWS_ACCESS_KEY_ID, AWS_DEFAULT_REGION, AWS_SECRET_ACCESS_KEY
   test-cluster:
     executor: aws-eks/python3
     parameters:
@@ -14,20 +37,31 @@ jobs:
           command: |
             kubectl get services
           name: Test cluster
+          
+
+  # Deploy the application to the AWS K8s cluster
+  deploy-application:
+    docker:
+      # aws-cli/2.3.4 Python/3.8.8 Linux/4.15.0-1110-aws docker/x86_64
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Check AWS version
+          command: |
+            aws --version
+            ls -l
+
 orbs:
-  aws-eks: circleci/aws-eks@0.2.3
-  kubernetes: circleci/kubernetes@0.4.0
+  aws-eks: circleci/aws-eks@1.1.0
+  kubernetes: circleci/kubernetes@0.12.0
 version: 2.1
 workflows:
   deployment:
     jobs:
-      - aws-eks/create-cluster:
-          cluster-name: my-eks-demo
+      #- build-application
+      #- deploy-application
       - test-cluster:
           cluster-name: my-eks-demo
           requires:
             - aws-eks/create-cluster
-      - aws-eks/delete-cluster:
-          cluster-name: my-eks-demo
-          requires:
-            - test-cluster

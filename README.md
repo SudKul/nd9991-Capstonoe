@@ -49,8 +49,8 @@ docker push sudkul/voting-app-frontend:latest
 
 After an edit is made to the repo, the CircleCI should
 - Lint the application code
-
-
+- Test the EKS cluster
+- Deploy the application
 
 ## [NOT WORKING] Creating a Kubernetes cluster in AWS EC2 instance
 ### 1. Install Docker

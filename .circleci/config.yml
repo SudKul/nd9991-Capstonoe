@@ -24,14 +24,19 @@ jobs:
   # AWS_ACCESS_KEY_ID, AWS_DEFAULT_REGION, AWS_SECRET_ACCESS_KEY
   test-cluster:
     executor: aws-eks/python3
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
     steps:
       - kubernetes/install
       - aws-eks/update-kubeconfig-with-authenticator:
-          cluster-name: my-eks-demo
+          cluster-name: << parameters.cluster-name >>
       - run:
-          name: kubectl get services
           command: |
-            kubectl get svc,pods,deployment
+            kubectl get services
+          name: Test cluster
           
 
   # Deploy the application to the AWS K8s cluster
@@ -54,11 +59,12 @@ version: 2.1
 workflows:
   deployment:
     jobs:
-      - build-application
-      - deploy-application
+      #- build-application
+      #- deploy-application
       - aws-eks/create-cluster:
           cluster-name: my-eks-demo
       - test-cluster:
+          cluster-name: my-eks-demo
           requires:
             - aws-eks/create-cluster
       - aws-eks/delete-cluster:
